@@ -3,671 +3,854 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fate Dice Roller</title>
+    <title>FATE Core System - Лист персонажа</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        .diamond {
+            transform: rotate(45deg);
+            width: 20px;
+            height: 20px;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
+        .diamond.checked {
+            background-color: #f59e0b;
+        }
+        .diamond.unchecked {
+            background-color: #9ca3af;
+        }
+        .fate-die {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-        body.light-theme {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .container {
-            background: #1e1e2f;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 1000px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-        body.light-theme .container {
-            background: white;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-        body.light-theme h1 {
-            color: #333;
-        }
-        .description {
-            color: #ccc;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-        body.light-theme .description {
-            color: #666;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        label {
-            font-weight: 600;
-            color: #ddd;
-            font-size: 1.1rem;
-        }
-        body.light-theme label {
-            color: #444;
-        }
-        input[type="number"] {
-            width: 80px;
-            padding: 12px;
-            border: 2px solid #444;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            text-align: center;
-            transition: border-color 0.3s;
-            background: #2d2d40;
-            color: #fff;
-        }
-        body.light-theme input[type="number"] {
-            background: white;
-            border-color: #ddd;
-            color: #333;
-        }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: #8a7cf5;
-        }
-        body.light-theme input[type="number"]:focus {
-            border-color: #667eea;
-        }
-        button {
-            background: linear-gradient(135deg, #8a7cf5 0%, #9b8aff 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(138, 124, 245, 0.3);
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(138, 124, 245, 0.4);
-        }
-        button:active {
-            transform: translateY(0);
-        }
-        body.light-theme button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        body.light-theme button:hover {
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-        .dice-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            min-height: 120px;
-        }
-        .die {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(145deg, #2d2d40, #3d3d50);
-            border: 2px solid #444;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2.5rem;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            animation: roll 0.6s ease-out;
+            font-size: 18px;
+            margin: 4px;
         }
-        body.light-theme .die {
-            background: linear-gradient(145deg, #f0f0f0, #ffffff);
-            border-color: #ddd;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        @keyframes roll {
-            0% { transform: rotate(0deg) scale(0.8); opacity: 0; }
-            50% { transform: rotate(180deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); opacity: 1; }
-        }
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            background: #2d2d40;
-            border-radius: 15px;
-            border-left: 4px solid #8a7cf5;
-        }
-        body.light-theme .result {
-            background: #f8f9fa;
-            border-left-color: #667eea;
-        }
-        .result h3 {
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-        body.light-theme .result h3 {
-            color: #333;
-        }
-        .result-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #8a7cf5;
-        }
-        body.light-theme .result-value {
-            color: #667eea;
-        }
-        .fate-info {
-            margin-top: 20px;
-            padding: 20px;
-            background: #2d2d40;
-            border-radius: 15px;
-            text-align: left;
-        }
-        body.light-theme .fate-info {
-            background: #e8f4fd;
-        }
-        .fate-info h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        body.light-theme .fate-info h3 {
-            color: #2c3e50;
-        }
-        .fate-symbols {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .symbol-item {
-            text-align: center;
-        }
-        .symbol {
-            font-size: 2rem;
-            margin-bottom: 5px;
-        }
-        .symbol-label {
-            font-size: 0.9rem;
-            color: #ccc;
-        }
-        body.light-theme .symbol-label {
-            color: #666;
-        }
-        /* Новый блок для соответствия граней кубика */
-        .dice-faces {
-            background: #2d2d40;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-        }
-        body.light-theme .dice-faces {
-            background: #f8f9fa;
-        }
-        .dice-faces h3 {
-            color: #fff;
-            margin-bottom: 15px;
-        }
-        body.light-theme .dice-faces h3 {
-            color: #2c3e50;
-        }
-        .faces-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .face-item {
-            background: #3d3d50;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        body.light-theme .face-item {
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .face-number {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #8a7cf5;
-            margin-bottom: 5px;
-        }
-        body.light-theme .face-number {
-            color: #667eea;
-        }
-        .face-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        .face-plus { color: #5dec84; }
-        .face-zero { color: #aaa; }
-        .face-minus { color: #ff6b6b; }
-        body.light-theme .face-plus { color: #27ae60; }
-        body.light-theme .face-zero { color: #7f8c8d; }
-        body.light-theme .face-minus { color: #e74c3c; }
-        /* История бросков */
-        .history {
-            background: #2d2d40;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: left;
-        }
-        body.light-theme .history {
-            background: #f8f9fa;
-        }
-        .history h3 {
-            color: #fff;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        body.light-theme .history h3 {
-            color: #2c3e50;
-        }
-        .history-list {
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            background: #3d3d50;
-            border-radius: 10px;
-        }
-        body.light-theme .history-list {
-            background: white;
-        }
-        .history-item {
-            padding: 10px;
-            border-bottom: 1px solid #444;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        body.light-theme .history-item {
-            border-bottom-color: #eee;
-        }
-        .history-item:last-child {
-            border-bottom: none;
-        }
-        .history-dice {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .history-die {
-            width: 25px;
-            height: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            border-radius: 4px;
-        }
-        .history-plus { background: #2a4a30; color: #5dec84; }
-        .history-zero { background: #333; color: #aaa; }
-        .history-minus { background: #4a2a2c; color: #ff6b6b; }
-        body.light-theme .history-plus { background: #d5f5e3; color: #27ae60; }
-        body.light-theme .history-zero { background: #f8f9fa; color: #7f8c8d; }
-        body.light-theme .history-minus { background: #fadbd8; color: #e74c3c; }
-        .history-total {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #8a7cf5;
-        }
-        body.light-theme .history-total {
-            color: #667eea;
-        }
-        /* Стили для скроллбара */
-        .history-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        .history-list::-webkit-scrollbar-track {
-            background: #444;
-            border-radius: 3px;
-        }
-        body.light-theme .history-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .history-list::-webkit-scrollbar-thumb {
-            background: #666;
-            border-radius: 3px;
-        }
-        body.light-theme .history-list::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-        }
-        .history-list::-webkit-scrollbar-thumb:hover {
-            background: #888;
-        }
-        body.light-theme .history-list::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        /* Toggle switch стили */
-        .theme-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            width: 100%;
-            margin-bottom: -10px;
-        }
-        .toggle-container {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
-        }
-        .toggle-container input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #667eea;
-            transition: .4s;
-            border-radius: 30px;
-        }
-        body.light-theme .toggle-slider {
-            background-color: #ccc;
-        }
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .toggle-slider {
-            background-color: #ccc;
-        }
-        body.light-theme input:checked + .toggle-slider {
-            background-color: #667eea;
-        }
-        input:checked + .toggle-slider:before {
-            transform: translateX(30px);
-        }
-        .toggle-label {
-            margin-left: 10px;
-            font-weight: 600;
-            color: #ddd;
-            font-size: 1.1rem;
-        }
-        body.light-theme .toggle-label {
-            color: #444;
-        }
-        @media (max-width: 768px) {
-            .container {
-                padding: 25px;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            .controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .die {
-                width: 60px;
-                height: 60px;
-                font-size: 2rem;
-            }
-            .faces-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 480px) {
-            .faces-grid {
-                grid-template-columns: 1fr;
-            }
-            .history-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-            }
-            .history-total {
-                align-self: flex-end;
-            }
-        }
+        .fate-plus { color: #10b981; }
+        .fate-minus { color: #ef4444; }
+        .fate-blank { color: #6b7280; }
     </style>
 </head>
-<body class="dark-theme">
-    <div class="container">
-        <div class="theme-toggle">
-            <span class="toggle-label">Светлая тема</span>
-            <label class="toggle-container">
-                <input type="checkbox" id="themeToggle">
-                <span class="toggle-slider"></span>
-            </label>
-        </div>
-        <h1>Fate Dice Roller</h1>
-        <p class="description">Выберите количество кубиков Fate и бросьте их! Каждый кубик имеет три возможных значения: +1, 0, -1.</p>
-        <div class="controls">
-            <div class="quantity-control">
-                <label for="diceCount">Количество кубиков:</label>
-                <input type="number" id="diceCount" min="1" max="10" value="4">
-            </div>
-            <button id="rollButton">Бросить кубики!</button>
-        </div>
-        <div class="dice-container" id="diceContainer"></div>
-        <div class="result" id="result" style="display: none;">
-            <h3>Общий результат:</h3>
-            <div class="result-value" id="resultValue">0</div>
-        </div>
-        <!-- Блок соответствия граней кубика -->
-        <div class="dice-faces">
-            <h3>Соответствие граней кубика Fate</h3>
-            <p>Обычный шестигранный кубик интерпретируется следующим образом:</p>
-            <div class="faces-grid">
-                <div class="face-item">
-                    <div class="face-number">Грани 1-2</div>
-                    <div class="face-value face-minus">−1</div>
-                </div>
-                <div class="face-item">
-                    <div class="face-number">Грани 3-4</div>
-                    <div class="face-value face-zero">0</div>
-                </div>
-                <div class="face-item">
-                    <div class="face-number">Грани 5-6</div>
-                    <div class="face-value face-plus">+1</div>
-                </div>
-            </div>
-        </div>
-        <!-- История бросков -->
-        <div class="history">
-            <h3>История бросков</h3>
-            <div class="history-list" id="historyList">
-                <div class="history-empty">История пуста</div>
-            </div>
-        </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const diceCountInput = document.getElementById('diceCount');
-            const rollButton = document.getElementById('rollButton');
-            const diceContainer = document.getElementById('diceContainer');
-            const resultDiv = document.getElementById('result');
-            const resultValue = document.getElementById('resultValue');
-            const historyList = document.getElementById('historyList');
-            const themeToggle = document.getElementById('themeToggle');
-            let rollHistory = [];
-            const maxHistoryItems = 10;
-            
-            // Проверка сохраненной темы
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            if (savedTheme === 'light') {
-                document.body.classList.remove('dark-theme');
-                document.body.classList.add('light-theme');
-                themeToggle.checked = true;
-            }
+<body class="bg-gray-900 text-white min-h-screen p-4">
+    <div id="root"></div>
 
-            // Функция для генерации случайного значения Fate кубика
-            function rollFateDie() {
-                const outcomes = [-1, 0, 1];
-                return outcomes[Math.floor(Math.random() * outcomes.length)];
-            }
-            
-            // Функция для получения символа по значению
-            function getSymbol(value) {
-                if (value === 1) return '+';
-                if (value === -1) return '−';
-                return '0';
-            }
-            
-            // Функция для получения цвета по значению
-            function getColor(value) {
-                if (value === 1) return '#5dec84';
-                if (value === -1) return '#ff6b6b';
-                return '#aaa';
-            }
-            
-            // Функция для получения класса истории по значению
-            function getHistoryClass(value) {
-                if (value === 1) return 'history-plus';
-                if (value === -1) return 'history-minus';
-                return 'history-zero';
-            }
-            
-            // Функция добавления в историю
-            function addToHistory(diceValues, total) {
-                const roll = {
-                    dice: [...diceValues],
-                    total: total,
-                    timestamp: new Date()
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // Default character data from the uploaded file
+        const defaultCharacterData = {
+          "name": "Jack Pocket Knife",
+          "description": "Малютка Джек был столь мал, что от прозвища \"Перочинный нож\" ему было не уйти.",
+          "aspects": {
+            "concept": "Аферист в робе пастора",
+            "problem": "Скрывается от нанимателя с краденным артефактом",
+            "aspect1": "Почти дварф",
+            "aspect2": "Зудящие ладошки",
+            "aspect3": "Безбожный шутник"
+          },
+          "skills": [
+            ["", "", "", "", ""],
+            ["Атлетика", "", "", "", ""],
+            ["Телосложение", "Скрытность", "", "", ""],
+            ["Обман", "Воля", "", "", ""],
+            ["Меткость", "Разум", "Проницательность", "", ""]
+          ],
+          "extras": "",
+          "stunts": "1. Взломщик (тихий взлом через скрытность)\n2. Опытный карманник (за 1 жетон без проверки незаметно забираешь мелкий предмет)\n3. Глупая шутка (эта шутка настолько плоха, что даже хороша -- вызывает безудержный поток хохота)",
+          "physicalStress": [false, false, false],
+          "mentalStress": [false, false, false],
+          "unnamedStress": [false, false, false, false, false],
+          "consequences": {
+            "light": "",
+            "moderate": "",
+            "severe": ""
+          },
+          "inventory": "0. Книга с черными страницами\n1. Метательные ножи (6 шт)\n2. Отмычки\n3. Серебряное распятие",
+          "tokens": [true, true, true, false, false, false, false, false, false, false]
+        };
+
+        function App() {
+            const [darkMode, setDarkMode] = useState(true);
+            const [expandedSections, setExpandedSections] = useState({
+                character: true,
+                aspects: true,
+                skills: true,
+                extras: true,
+                stunts: true,
+                stress: true,
+                consequences: true,
+                inventory: true,
+                tokens: true,
+                dice: true
+            });
+
+            const [characterData, setCharacterData] = useState(defaultCharacterData);
+            const [diceCount, setDiceCount] = useState(4);
+            const [currentRoll, setCurrentRoll] = useState(null);
+            const [rollHistory, setRollHistory] = useState([]);
+            const fileInputRef = useRef(null);
+            const menuRef = useRef(null);
+            const [menuOpen, setMenuOpen] = useState(false);
+
+            // Close menu when clicking outside
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (menuRef.current && !menuRef.current.contains(event.target) && menuOpen) {
+                        setMenuOpen(false);
+                    }
                 };
-                rollHistory.unshift(roll);
-                // Ограничение количества записей в истории
-                if (rollHistory.length > maxHistoryItems) {
-                    rollHistory.pop();
-                }
-                updateHistoryDisplay();
-            }
-            
-            // Функция обновления отображения истории
-            function updateHistoryDisplay() {
-                if (rollHistory.length === 0) {
-                    historyList.innerHTML = '<div class="history-empty">История пуста</div>';
-                    return;
-                }
-                historyList.innerHTML = '';
-                rollHistory.forEach(roll => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
-                    const diceContainer = document.createElement('div');
-                    diceContainer.className = 'history-dice';
-                    roll.dice.forEach(value => {
-                        const die = document.createElement('div');
-                        die.className = `history-die ${getHistoryClass(value)}`;
-                        die.textContent = getSymbol(value);
-                        diceContainer.appendChild(die);
-                    });
-                    const totalSpan = document.createElement('span');
-                    totalSpan.className = 'history-total';
-                    totalSpan.textContent = roll.total;
-                    historyItem.appendChild(diceContainer);
-                    historyItem.appendChild(totalSpan);
-                    historyList.appendChild(historyItem);
-                });
-            }
-            
-            // Функция броска кубиков
-            function rollDice() {
-                const count = parseInt(diceCountInput.value);
-                // Валидация количества
-                if (count < 1 || count > 10) {
-                    alert('Пожалуйста, выберите количество кубиков от 1 до 10');
-                    return;
-                }
-                // Очистка контейнера
-                diceContainer.innerHTML = '';
-                let total = 0;
-                const dice = [];
-                // Генерация кубиков
-                for (let i = 0; i < count; i++) {
-                    const value = rollFateDie();
-                    total += value;
-                    dice.push(value);
-                }
-                // Создание элементов кубиков с задержкой для анимации
-                dice.forEach((value, index) => {
-                    setTimeout(() => {
-                        const die = document.createElement('div');
-                        die.className = 'die';
-                        die.textContent = getSymbol(value);
-                        die.style.color = getColor(value);
-                        diceContainer.appendChild(die);
-                    }, index * 100);
-                });
-                // Показ результата и добавление в историю
-                setTimeout(() => {
-                    resultValue.textContent = total;
-                    resultDiv.style.display = 'block';
-                    addToHistory(dice, total);
-                }, count * 100 + 300);
-            }
-            
-            // Обработчик кнопки
-            rollButton.addEventListener('click', rollDice);
-            
-            // Обработчик Enter в поле ввода
-            diceCountInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    rollDice();
-                }
-            });
-            
-            // Обработчик переключения темы
-            themeToggle.addEventListener('change', function() {
-                if (this.checked) {
-                    document.body.classList.remove('dark-theme');
-                    document.body.classList.add('light-theme');
-                    localStorage.setItem('theme', 'light');
-                    document.querySelector('.toggle-label').textContent = 'Темная тема';
+
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => {
+                    document.removeEventListener('mousedown', handleClickOutside);
+                };
+            }, [menuOpen]);
+
+            const toggleSection = (section) => {
+                setExpandedSections(prev => ({
+                    ...prev,
+                    [section]: !prev[section]
+                }));
+            };
+
+            const handleInputChange = (field, value, subField = null) => {
+                if (subField) {
+                    setCharacterData(prev => ({
+                        ...prev,
+                        [field]: {
+                            ...prev[field],
+                            [subField]: value
+                        }
+                    }));
                 } else {
-                    document.body.classList.remove('light-theme');
-                    document.body.classList.add('dark-theme');
-                    localStorage.setItem('theme', 'dark');
-                    document.querySelector('.toggle-label').textContent = 'Светлая тема';
+                    setCharacterData(prev => ({
+                        ...prev,
+                        [field]: value
+                    }));
                 }
-            });
-            
-            // Инициализация с 4 кубиками (стандарт Fate)
-            rollDice();
-        });
+            };
+
+            const handleSkillChange = (row, col, value) => {
+                const newSkills = [...characterData.skills];
+                newSkills[row][col] = value;
+                setCharacterData(prev => ({
+                    ...prev,
+                    skills: newSkills
+                }));
+            };
+
+            const handleCheckboxChange = (type, index, checked) => {
+                if (type === 'physicalStress') {
+                    const newStress = [...characterData.physicalStress];
+                    newStress[index] = checked;
+                    setCharacterData(prev => ({
+                        ...prev,
+                        physicalStress: newStress
+                    }));
+                } else if (type === 'mentalStress') {
+                    const newStress = [...characterData.mentalStress];
+                    newStress[index] = checked;
+                    setCharacterData(prev => ({
+                        ...prev,
+                        mentalStress: newStress
+                    }));
+                } else if (type === 'unnamedStress') {
+                    const newStress = [...characterData.unnamedStress];
+                    newStress[index] = checked;
+                    setCharacterData(prev => ({
+                        ...prev,
+                        unnamedStress: newStress
+                    }));
+                } else if (type === 'tokens') {
+                    const newTokens = [...characterData.tokens];
+                    newTokens[index] = checked;
+                    setCharacterData(prev => ({
+                        ...prev,
+                        tokens: newTokens
+                    }));
+                }
+            };
+
+            const exportToJSON = () => {
+                const dataStr = JSON.stringify(characterData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const exportFileDefaultName = `${characterData.name.replace(/\s+/g, '_')}.json`;
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', url);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                
+                // Clean up
+                URL.revokeObjectURL(url);
+                setMenuOpen(false);
+            };
+
+            const importFromJSON = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        setCharacterData(importedData);
+                    } catch (error) {
+                        alert('Ошибка при импорте файла. Убедитесь, что это корректный JSON файл.');
+                    }
+                };
+                reader.readAsText(file);
+                setMenuOpen(false);
+            };
+
+            const toggleTheme = () => {
+                setDarkMode(!darkMode);
+                setMenuOpen(false);
+            };
+
+            const activeTokens = characterData.tokens.filter(token => token).length;
+
+            const getDieDisplay = (value) => {
+                if (value === 1) return '+';
+                if (value === -1) return '-';
+                return '•';
+            };
+
+            const getDieClass = (value) => {
+                if (value === 1) return 'fate-plus';
+                if (value === -1) return 'fate-minus';
+                return 'fate-blank';
+            };
+
+            const rollDice = () => {
+                const results = [];
+                let total = 0;
+                
+                for (let i = 0; i < diceCount; i++) {
+                    const roll = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
+                    results.push(roll);
+                    total += roll;
+                }
+                
+                const rollData = {
+                    id: Date.now(),
+                    dice: results,
+                    total: total,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                setCurrentRoll(rollData);
+                setRollHistory(prev => [rollData, ...prev.slice(0, 9)]); // Keep last 10 rolls
+            };
+
+            return (
+                <div className={`min-h-screen p-4 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+                    {/* Header with hamburger menu */}
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold">FATE Core System</h1>
+                        <div className="relative" ref={menuRef}>
+                            <button 
+                                onClick={() => setMenuOpen(!menuOpen)}
+                                className="p-2 rounded-md bg-gray-700 hover:bg-gray-600"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+                            
+                            {menuOpen && (
+                                <div className="absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
+                                    <div className="py-1">
+                                        <button 
+                                            onClick={toggleTheme}
+                                            className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
+                                        >
+                                            {darkMode ? 'Светлая тема' : 'Темная тема'}
+                                        </button>
+                                        <button 
+                                            onClick={exportToJSON}
+                                            className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left"
+                                        >
+                                            Экспорт в JSON
+                                        </button>
+                                        <label className="block px-4 py-2 text-sm text-white hover:bg-gray-700 w-full text-left cursor-pointer">
+                                            Импорт из JSON
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef}
+                                                onChange={importFromJSON}
+                                                accept=".json"
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Character Sheet */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left Column */}
+                        <div className="space-y-6">
+                            {/* Character Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('character')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>ПЕРСОНАЖ</span>
+                                    <span>{expandedSections.character ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.character && (
+                                    <div className="p-4 space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Имя</label>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.name}
+                                                onChange={(e) => handleInputChange('name', e.target.value)}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Описание</label>
+                                            <textarea 
+                                                rows={5}
+                                                value={characterData.description}
+                                                onChange={(e) => handleInputChange('description', e.target.value)}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Aspects Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('aspects')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>АСПЕКТЫ</span>
+                                    <span>{expandedSections.aspects ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.aspects && (
+                                    <div className="p-4 space-y-3">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Концепция</label>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.aspects.concept}
+                                                onChange={(e) => handleInputChange('aspects', e.target.value, 'concept')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Проблема</label>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.aspects.problem}
+                                                onChange={(e) => handleInputChange('aspects', e.target.value, 'problem')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.aspects.aspect1}
+                                                onChange={(e) => handleInputChange('aspects', e.target.value, 'aspect1')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.aspects.aspect2}
+                                                onChange={(e) => handleInputChange('aspects', e.target.value, 'aspect2')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.aspects.aspect3}
+                                                onChange={(e) => handleInputChange('aspects', e.target.value, 'aspect3')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Extras Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('extras')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>ДОПОЛНЕНИЯ</span>
+                                    <span>{expandedSections.extras ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.extras && (
+                                    <div className="p-4">
+                                        <textarea 
+                                            rows={5}
+                                            value={characterData.extras}
+                                            onChange={(e) => handleInputChange('extras', e.target.value)}
+                                            className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Stress Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('stress')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>СТРЕСС</span>
+                                    <span>{expandedSections.stress ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.stress && (
+                                    <div className="p-4 space-y-4">
+                                        <div>
+                                            <h3 className="font-medium mb-2">Физический стресс</h3>
+                                            <div className="flex space-x-4">
+                                                {[1, 2, 3].map((num, i) => (
+                                                    <div key={i} className="flex items-center">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={characterData.physicalStress[i]}
+                                                            onChange={(e) => handleCheckboxChange('physicalStress', i, e.target.checked)}
+                                                            className="mr-2 h-5 w-5"
+                                                        />
+                                                        <span>{num}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium mb-2">Ментальный стресс</h3>
+                                            <div className="flex space-x-4">
+                                                {[1, 2, 3].map((num, i) => (
+                                                    <div key={i} className="flex items-center">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={characterData.mentalStress[i]}
+                                                            onChange={(e) => handleCheckboxChange('mentalStress', i, e.target.checked)}
+                                                            className="mr-2 h-5 w-5"
+                                                        />
+                                                        <span>{num}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <hr className="my-2" />
+                                            <div className="flex space-x-4">
+                                                {[1, 2, 3, 4, 5].map((num, i) => (
+                                                    <div key={i} className="flex items-center">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={characterData.unnamedStress[i]}
+                                                            onChange={(e) => handleCheckboxChange('unnamedStress', i, e.target.checked)}
+                                                            className="mr-2 h-5 w-5"
+                                                        />
+                                                        <span>{num}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Dice Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('dice')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>КУБЫ</span>
+                                    <span>{expandedSections.dice ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.dice && (
+                                    <div className="p-4 space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Количество кубов</label>
+                                            <select 
+                                                value={diceCount}
+                                                onChange={(e) => setDiceCount(parseInt(e.target.value))}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            >
+                                                {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                                                    <option key={num} value={num}>{num}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        <button 
+                                            onClick={rollDice}
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                        >
+                                            Бросить кубы
+                                        </button>
+                                        
+                                        {currentRoll && (
+                                            <div className="space-y-2">
+                                                <h4 className="font-medium">Результат броска:</h4>
+                                                <div className="flex flex-wrap justify-center">
+                                                    {currentRoll.dice.map((die, index) => (
+                                                        <div key={index} className={`fate-die ${getDieClass(die)}`}>
+                                                            {getDieDisplay(die)}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="text-center font-bold text-lg">
+                                                    Сумма: {currentRoll.total}
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {rollHistory.length > 0 && (
+                                            <div className="space-y-2">
+                                                <h4 className="font-medium">История бросков:</h4>
+                                                <div className="space-y-1 max-h-32 overflow-y-auto">
+                                                    {rollHistory.map(roll => (
+                                                        <div key={roll.id} className="text-sm flex justify-between items-center bg-gray-800 p-2 rounded">
+                                                            <span>{roll.timestamp}</span>
+                                                            <span className="font-mono">Сумма: {roll.total}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="mt-4 p-3 bg-gray-800 rounded">
+                                            <h4 className="font-medium mb-2">Памятка по кубам FATE:</h4>
+                                            <ul className="text-sm space-y-1">
+                                                <li>1–2 на d6 = <span className="text-red-400 font-bold">-1</span></li>
+                                                <li>3–4 на d6 = <span className="text-gray-400 font-bold">0</span></li>
+                                                <li>5–6 на d6 = <span className="text-green-400 font-bold">+1</span></li>
+                                                <li>Стандартный бросок: 4 куба + модификатор навыка</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="space-y-6">
+                            {/* Skills Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('skills')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>НАВЫКИ</span>
+                                    <span>{expandedSections.skills ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.skills && (
+                                    <div className="p-4">
+                                        <div className="grid grid-cols-6 gap-2">
+                                            {/* Level labels */}
+                                            <div className="font-medium">Великолепн. (+5)</div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[0][0] || ""}
+                                                onChange={(e) => handleSkillChange(0, 0, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[0][1] || ""}
+                                                onChange={(e) => handleSkillChange(0, 1, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[0][2] || ""}
+                                                onChange={(e) => handleSkillChange(0, 2, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[0][3] || ""}
+                                                onChange={(e) => handleSkillChange(0, 3, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[0][4] || ""}
+                                                onChange={(e) => handleSkillChange(0, 4, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            
+                                            <div className="font-medium">Отличный (+4)</div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[1][0] || ""}
+                                                onChange={(e) => handleSkillChange(1, 0, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[1][1] || ""}
+                                                onChange={(e) => handleSkillChange(1, 1, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[1][2] || ""}
+                                                onChange={(e) => handleSkillChange(1, 2, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[1][3] || ""}
+                                                onChange={(e) => handleSkillChange(1, 3, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[1][4] || ""}
+                                                onChange={(e) => handleSkillChange(1, 4, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            
+                                            <div className="font-medium">Хороший (+3)</div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[2][0] || ""}
+                                                onChange={(e) => handleSkillChange(2, 0, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[2][1] || ""}
+                                                onChange={(e) => handleSkillChange(2, 1, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[2][2] || ""}
+                                                onChange={(e) => handleSkillChange(2, 2, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[2][3] || ""}
+                                                onChange={(e) => handleSkillChange(2, 3, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[2][4] || ""}
+                                                onChange={(e) => handleSkillChange(2, 4, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            
+                                            <div className="font-medium">Неплохой (+2)</div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[3][0] || ""}
+                                                onChange={(e) => handleSkillChange(3, 0, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[3][1] || ""}
+                                                onChange={(e) => handleSkillChange(3, 1, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[3][2] || ""}
+                                                onChange={(e) => handleSkillChange(3, 2, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[3][3] || ""}
+                                                onChange={(e) => handleSkillChange(3, 3, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[3][4] || ""}
+                                                onChange={(e) => handleSkillChange(3, 4, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            
+                                            <div className="font-medium">Средний (+1)</div>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[4][0] || ""}
+                                                onChange={(e) => handleSkillChange(4, 0, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[4][1] || ""}
+                                                onChange={(e) => handleSkillChange(4, 1, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[4][2] || ""}
+                                                onChange={(e) => handleSkillChange(4, 2, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[4][3] || ""}
+                                                onChange={(e) => handleSkillChange(4, 3, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={characterData.skills[4][4] || ""}
+                                                onChange={(e) => handleSkillChange(4, 4, e.target.value)}
+                                                className={`p-1 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Stunts Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('stunts')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>ТРЮКИ</span>
+                                    <span>{expandedSections.stunts ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.stunts && (
+                                    <div className="p-4">
+                                        <textarea 
+                                            rows={5}
+                                            value={characterData.stunts}
+                                            onChange={(e) => handleInputChange('stunts', e.target.value)}
+                                            className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Consequences Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('consequences')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>ПОСЛЕДСТВИЯ</span>
+                                    <span>{expandedSections.consequences ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.consequences && (
+                                    <div className="p-4 space-y-3">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Легкое</label>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.consequences.light}
+                                                onChange={(e) => handleInputChange('consequences', e.target.value, 'light')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Среднее</label>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.consequences.moderate}
+                                                onChange={(e) => handleInputChange('consequences', e.target.value, 'moderate')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Тяжелое</label>
+                                            <input 
+                                                type="text" 
+                                                value={characterData.consequences.severe}
+                                                onChange={(e) => handleInputChange('consequences', e.target.value, 'severe')}
+                                                className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Inventory Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('inventory')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>ИНВЕНТАРЬ</span>
+                                    <span>{expandedSections.inventory ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.inventory && (
+                                    <div className="p-4">
+                                        <textarea 
+                                            rows={5}
+                                            value={characterData.inventory}
+                                            onChange={(e) => handleInputChange('inventory', e.target.value)}
+                                            className={`w-full p-2 rounded border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Tokens Block */}
+                            <div className={`rounded-md border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+                                <button 
+                                    onClick={() => toggleSection('tokens')}
+                                    className={`w-full p-2 text-left font-bold ${darkMode ? 'bg-gray-800' : 'bg-gray-200'} flex justify-between items-center`}
+                                >
+                                    <span>ЖЕТОНЫ</span>
+                                    <span>{expandedSections.tokens ? '▼' : '▶'}</span>
+                                </button>
+                                {expandedSections.tokens && (
+                                    <div className="p-4">
+                                        <div className="flex flex-wrap gap-3 items-center">
+                                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+                                                <div key={i} className="flex items-center">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={characterData.tokens[i]}
+                                                        onChange={(e) => handleCheckboxChange('tokens', i, e.target.checked)}
+                                                        className="mr-2 h-5 w-5"
+                                                    />
+                                                    <div className={`diamond ${characterData.tokens[i] ? 'checked' : 'unchecked'}`}></div>
+                                                </div>
+                                            ))}
+                                            <div className="ml-4 font-medium">
+                                                Всего: {activeTokens}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
